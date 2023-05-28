@@ -1,7 +1,7 @@
 package cotuba;
 
 public class Capitulo {
-    
+
     private String titulo;
     private String conteudoHTML;
 

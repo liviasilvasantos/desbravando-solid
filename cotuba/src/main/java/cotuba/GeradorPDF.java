@@ -15,20 +15,27 @@ import com.itextpdf.layout.property.AreaBreakType;
 
 public class GeradorPDF {
 
-    public void gera(final Path diretorioDosMD, final Path arquivoDeSaida) {
+    public void gera(final Ebook ebook) {
+
+        final Path arquivoDeSaida = ebook.getArquivoDeSaida();
 
         try (var writer = new PdfWriter(Files.newOutputStream(arquivoDeSaida));
                 var pdf = new PdfDocument(writer);
                 var pdfDocument = new Document(pdf)) {
 
-            List<IElement> convertToElements = HtmlConverter.convertToElements(html);
+            for (Capitulo capitulo : ebook.getCapitulos()) {
+                String html = capitulo.getConteudoHTML();
 
-            for (IElement element : convertToElements) {
-                pdfDocument.add((IBlockElement) element);
+                List<IElement> convertToElements = HtmlConverter.convertToElements(html);
+
+                for (IElement element : convertToElements) {
+                    pdfDocument.add((IBlockElement) element);
+                }
+
+                if (!ebook.isUltimoCapitulo(capitulo)) {
+                    pdfDocument.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+                }
             }
-
-            // TODO: nao adicionar pagina depois do ultimo capitulo
-            pdfDocument.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
         } catch (Exception ex) {
             throw new IllegalStateException("Erro ao criar arquivo PDF: " + arquivoDeSaida.toAbsolutePath(), ex);

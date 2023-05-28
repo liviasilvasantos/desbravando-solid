@@ -2,6 +2,7 @@ package cotuba;
 
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -18,13 +19,18 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 public class RenderizadorMDParaHTML {
 
-    public void renderiza(final Path diretorioDosMD) {
+    public List<Capitulo> renderiza(final Path diretorioDosMD) {
+        final List<Capitulo> capitulos = new ArrayList<>();
+
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.md");
         try (Stream<Path> arquivosMD = Files.list(diretorioDosMD)) {
             arquivosMD
                     .filter(matcher::matches)
                     .sorted()
                     .forEach(arquivoMD -> {
+
+                        final Capitulo capitulo = new Capitulo();
+
                         Parser parser = Parser.builder().build();
                         Node document = null;
                         try {
@@ -35,7 +41,7 @@ public class RenderizadorMDParaHTML {
                                     if (heading.getLevel() == 1) {
                                         // capítulo
                                         String tituloDoCapitulo = ((Text) heading.getFirstChild()).getLiteral();
-                                        // TODO: usar título do capítulo
+                                        capitulo.setTitulo(tituloDoCapitulo);
                                     } else if (heading.getLevel() == 2) {
                                         // seção
                                     } else if (heading.getLevel() == 3) {
@@ -52,8 +58,8 @@ public class RenderizadorMDParaHTML {
                             HtmlRenderer renderer = HtmlRenderer.builder().build();
                             String html = renderer.render(document);
 
-                            // TODO pdf ou epub aqui
-
+                            capitulo.setConteudoHTML(html);
+                            capitulos.add(capitulo);
                         } catch (Exception ex) {
                             throw new IllegalStateException("Erro ao renderizar para HTML o arquivo " + arquivoMD,
                                     ex);
@@ -64,5 +70,7 @@ public class RenderizadorMDParaHTML {
             throw new IllegalStateException(
                     "Erro tentando encontrar arquivos .md em " + diretorioDosMD.toAbsolutePath(), ex);
         }
+
+        return capitulos;
     }
 }
