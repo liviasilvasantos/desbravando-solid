@@ -1,0 +1,14 @@
+target
+.classpath
+.project
+.settings
+.build/
+.idea/
+.vscode/
+/*.pdf
+/*.epub
+/*.html/
+/libs/
+/cotuba.sh
+exec
+.DS_Store
