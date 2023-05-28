@@ -1,4 +1,4 @@
-package cotuba;
+package cotuba.cli;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.io.File;
 import java.io.IOException;
 
-public class LeitorOpcoesCLI {
+class LeitorOpcoesCLI {
 
     private Path diretorioDosMD;
     private String formato;
@@ -26,37 +26,9 @@ public class LeitorOpcoesCLI {
     public LeitorOpcoesCLI(final String[] args) {
         try {
 
-            var options = new Options();
-
-            var opcaoDeDiretorioDosMD = new Option("d", "dir", true,
-                    "Diretório que contém os arquivos md. Default: diretório atual.");
-            options.addOption(opcaoDeDiretorioDosMD);
-
-            var opcaoDeFormatoDoEbook = new Option("f", "format", true,
-                    "Formato de saída do ebook. Pode ser: pdf ou epub. Default: pdf");
-            options.addOption(opcaoDeFormatoDoEbook);
-
-            var opcaoDeArquivoDeSaida = new Option("o", "output", true,
-                    "Arquivo de saída do ebook. Default: book.{formato}.");
-            options.addOption(opcaoDeArquivoDeSaida);
-
-            var opcaoModoVerboso = new Option("v", "verbose", false,
-                    "Habilita modo verboso.");
-            options.addOption(opcaoModoVerboso);
-
-            CommandLineParser cmdParser = new DefaultParser();
-            var ajuda = new HelpFormatter();
-            CommandLine cmd;
-
-            try {
-                cmd = cmdParser.parse(options, args);
-            } catch (ParseException e) {
-                System.err.println(e.getMessage());
-                ajuda.printHelp("cotuba", options);
-                System.exit(1);
-                return;
-            }
-
+            var options = criaOpcoes();
+            var cmd = parseDosArgumentos(args, options);
+            // -------
             String nomeDoDiretorioDosMD = cmd.getOptionValue("dir");
 
             if (nomeDoDiretorioDosMD != null) {
@@ -95,6 +67,43 @@ public class LeitorOpcoesCLI {
         } catch (final IOException ex) {
             throw new IllegalArgumentException(ex);
         }
+    }
+
+    private CommandLine parseDosArgumentos(String[] args, Options options) {
+        final CommandLineParser cmdParser = new DefaultParser();
+        var ajuda = new HelpFormatter();
+        CommandLine cmd;
+
+        try {
+            cmd = cmdParser.parse(options, args);
+            return cmd;
+        } catch (ParseException e) {
+            ajuda.printHelp("cotuba", options);
+
+            throw new IllegalArgumentException("Opção inválida!", e);
+        }
+    }
+
+    private Options criaOpcoes() {
+        var options = new Options();
+
+        var opcaoDeDiretorioDosMD = new Option("d", "dir", true,
+                "Diretório que contém os arquivos md. Default: diretório atual.");
+        options.addOption(opcaoDeDiretorioDosMD);
+
+        var opcaoDeFormatoDoEbook = new Option("f", "format", true,
+                "Formato de saída do ebook. Pode ser: pdf ou epub. Default: pdf");
+        options.addOption(opcaoDeFormatoDoEbook);
+
+        var opcaoDeArquivoDeSaida = new Option("o", "output", true,
+                "Arquivo de saída do ebook. Default: book.{formato}.");
+        options.addOption(opcaoDeArquivoDeSaida);
+
+        var opcaoModoVerboso = new Option("v", "verbose", false,
+                "Habilita modo verboso.");
+        options.addOption(opcaoModoVerboso);
+
+        return options;
     }
 
     public Path getDiretorioDosMD() {
